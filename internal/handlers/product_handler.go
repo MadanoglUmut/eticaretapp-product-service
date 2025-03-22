@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"ProductService/internal/models"
+	"math/rand"
 
 	"github.com/go-swagno/swagno/components/endpoint"
 	"github.com/go-swagno/swagno/components/http/response"
@@ -44,17 +45,16 @@ func (h *ProductHandler) GetProductsHandler(c *fiber.Ctx) error {
 }
 
 func (h *ProductHandler) GetProductHandler(c *fiber.Ctx) error {
-	/*
-		randomNumber := rand.Intn(100)
 
+	randomNumber := rand.Intn(100)
 
-		if randomNumber < 55 {
-			return c.Status(fiber.StatusServiceUnavailable).JSON(models.FailResponse{
-				Error:   "Sunucu  hizmet veremiyor",
-				Details: "Tekrar deneyin",
-			})
-		}
-	*/
+	if randomNumber < 5 {
+		return c.Status(fiber.StatusServiceUnavailable).JSON(models.FailResponse{
+			Error:   "Sunucu  hizmet veremiyor",
+			Details: "Tekrar deneyin",
+		})
+	}
+
 	id, err := c.ParamsInt("id")
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(models.FailResponse{
