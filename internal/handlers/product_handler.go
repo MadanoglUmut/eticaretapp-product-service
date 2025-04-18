@@ -3,6 +3,7 @@ package handlers
 import (
 	"ProductService/internal/models"
 	"math/rand"
+	"time"
 
 	"github.com/go-swagno/swagno/components/endpoint"
 	"github.com/go-swagno/swagno/components/http/response"
@@ -15,19 +16,31 @@ type productService interface {
 	GetProduct(id int) (models.Product, error)
 }
 
-type ProductHandler struct {
-	productService productService
+type metric interface {
+	ObserveHandler(name string, startTime time.Time, status int)
 }
 
-func NewProductHandler(productService productService) *ProductHandler {
+type ProductHandler struct {
+	productService productService
+	metric         metric
+}
+
+func NewProductHandler(productService productService, metric metric) *ProductHandler {
 
 	return &ProductHandler{
 		productService: productService,
+		metric:         metric,
 	}
 
 }
 
 func (h *ProductHandler) GetProductsHandler(c *fiber.Ctx) error {
+
+	defer func() {
+
+		h.metric.ObserveHandler("ProductHandler_GetProducts", time.Now(), c.Response().StatusCode())
+
+	}()
 
 	products, err := h.productService.GetProducts()
 
@@ -46,9 +59,15 @@ func (h *ProductHandler) GetProductsHandler(c *fiber.Ctx) error {
 
 func (h *ProductHandler) GetProductHandler(c *fiber.Ctx) error {
 
+	defer func() {
+
+		h.metric.ObserveHandler("ProductHandler_GetProduct", time.Now(), c.Response().StatusCode())
+
+	}()
+
 	randomNumber := rand.Intn(100)
 
-	if randomNumber < 5 {
+	if randomNumber < 40 {
 		return c.Status(fiber.StatusServiceUnavailable).JSON(models.FailResponse{
 			Error:   "Sunucu  hizmet veremiyor",
 			Details: "Tekrar deneyin",
